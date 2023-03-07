@@ -1,10 +1,12 @@
 #!/bin/bash
 
+set -euxo
+
 # The lib directory
 LIB_ROOT=$PWD
 
 # Ensure this is adjusted to your local emsdk path
-EMSCRIPTEN_DIR=~/Development/emsdk/upstream/emscripten
+EMSCRIPTEN_DIR=/home/rize/code/emsdk/upstream/emscripten
 
 # Emscripten cmake
 EMSCRIPTEN_CMAKE_DIR=$EMSCRIPTEN_DIR/cmake/Modules/Platform/Emscripten.cmake
@@ -34,14 +36,14 @@ build_OPENCV() {
   # "-DOPENCV_EXTRA_MODULES_PATH=[YOUR_PATH_TO_OPENCV_CONTRIB_DIR]/opencv_contrib-4.x/modules",
   # For more options look here: https://docs.opencv.org/4.x/d4/da1/tutorial_js_setup.html
 
-  rm -rf $INSTALL_DIR/opencv/
+  #rm -rf $INSTALL_DIR/opencv/
 
   python $LIB_ROOT/opencv/platforms/js/build_js.py $INSTALL_DIR/opencv --build_wasm $CONF_OPENCV --emscripten_dir $EMSCRIPTEN_DIR
 }
 
 build_EIGEN() {
-  rm -rf $INSTALL_DIR/eigen/
-  rm -rf $LIB_ROOT/eigen/build
+  #rm -rf $INSTALL_DIR/eigen/
+  #rm -rf $LIB_ROOT/eigen/build
   mkdir -p $LIB_ROOT/eigen/build
 
   cd $LIB_ROOT/eigen/build
@@ -57,8 +59,8 @@ build_EIGEN() {
 }
 
 build_OBINDEX2() {
-  rm -rf $INSTALL_DIR/obindex2/
-  rm -rf $LIB_ROOT/obindex2/build
+  #rm -rf $INSTALL_DIR/obindex2/
+  #rm -rf $LIB_ROOT/obindex2/build
   mkdir -p $LIB_ROOT/obindex2/build
 
   cd $LIB_ROOT/obindex2/build
@@ -70,13 +72,13 @@ build_OBINDEX2() {
     -DCMAKE_C_FLAGS="${BUILD_FLAGS} -s USE_BOOST_HEADERS=1" \
     -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/obindex2/ \
     -DBUILD_SHARED_LIBS=OFF \
-    -DOpenCV_DIR=$LIB_ROOT/opencv/build/
+    -DOpenCV_DIR=$LIB_ROOT/build/opencv/
   emmake make -j install
 }
 
 build_IBOW_LCD(){
-  rm -rf $INSTALL_DIR/ibow_lcd/
-  rm -rf $LIB_ROOT/ibow_lcd/build
+  #rm -rf $INSTALL_DIR/ibow_lcd/
+  #rm -rf $LIB_ROOT/ibow_lcd/build
   mkdir -p $LIB_ROOT/ibow_lcd/build
 
   cd $LIB_ROOT/ibow_lcd/build
@@ -88,13 +90,13 @@ build_IBOW_LCD(){
     -DCMAKE_C_FLAGS="${BUILD_FLAGS} -s USE_BOOST_HEADERS=1" \
     -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/ibow_lcd/ \
     -DBUILD_SHARED_LIBS=OFF \
-    -DOpenCV_DIR=$LIB_ROOT/opencv/build/
+    -DOpenCV_DIR=$LIB_ROOT/build/opencv/
   emmake make -j install
 }
 
 build_SOPHUS(){
-  rm -rf $INSTALL_DIR/Sophus/
-  rm -rf $LIB_ROOT/Sophus/build
+  #rm -rf $INSTALL_DIR/Sophus/
+  #rm -rf $LIB_ROOT/Sophus/build
   mkdir -p $LIB_ROOT/Sophus/build
 
   cd $LIB_ROOT/Sophus/build
@@ -116,7 +118,7 @@ build_CERES(){
 
   rm -rf $INSTALL_DIR/ceres-solver/
   rm -rf $LIB_ROOT/ceres-solver/build
-  mkdir $LIB_ROOT/ceres-solver/build
+  mkdir -p $LIB_ROOT/ceres-solver/build
 
   cd $LIB_ROOT/ceres-solver/build
   emcmake cmake .. \
@@ -132,15 +134,15 @@ build_CERES(){
     -DEIGENSPARSE:BOOL=1 \
     -DCERES_THREADING_MODEL="NO_THREADS" \
     -DMINIGLOG:BOOL=1 \
-    -DEigen3_DIR=$LIB_ROOT/eigen/build/
+    -DEigen3_DIR=$LIB_ROOT/build/eigen/share/eigen3/cmake
   emmake make -j install
-  find $INSTALL_DIR/ceres-solver/include -type f -name '*.h' -exec sed -i '' s#glog/logging.h#ceres/internal/miniglog/glog/logging.h#g {} +
+  find $INSTALL_DIR/ceres-solver/include/ceres -type f -name '*.h' | xargs sed -i 's#glog/logging.h#ceres/internal/miniglog/glog/logging.h#g'
 }
 
 build_OPENGV(){
-  rm -rf $INSTALL_DIR/opengv/
-  rm -rf $LIB_ROOT/opengv/build
-  mkdir $LIB_ROOT/opengv/build
+  #rm -rf $INSTALL_DIR/opengv/
+  #rm -rf $LIB_ROOT/opengv/build
+  mkdir -p $LIB_ROOT/opengv/build
 
   cd $LIB_ROOT/opengv/build
   emcmake cmake .. \
@@ -171,5 +173,6 @@ build() {
 }
 
 libsToBuild=( "EIGEN" "OPENCV" "OBINDEX2" "IBOW_LCD" "SOPHUS" "CERES" "OPENGV" )
+libsToBuild=( "CERES" "OPENGV" )
 
 build ${libsToBuild[@]}
